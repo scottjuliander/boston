@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boston Matrix</title>
+    <title>BCG Matrix</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -26,42 +26,6 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        h3 {
-            margin-bottom: 20px;
-        }
-        #productInputs > div {
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background: #fefefe;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            background: #4CAF50;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background: #45a049;
-        }
         canvas {
             display: block;
             max-width: 800px;
@@ -80,80 +44,20 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             color: #333;
         }
-        .description h2 {
-            color: #4CAF50;
-        }
-        .download {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .ai-feedback {
-            max-width: 800px;
-            margin: 20px auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            color: #333;
-        }
-        .ai-feedback ul {
-            padding-left: 20px;
-        }
     </style>
 </head>
 <body>
-    <h1>Boston Matrix</h1>
-    <form id="productForm">
-        <h3>Enter Product Details</h3>
-        <div id="productInputs">
-            <!-- Product inputs will be generated here -->
-        </div>
+    <h1>BCG Matrix</h1>
+    <form id="uploadForm">
+        <h3>Upload CSV Data</h3>
         <input type="file" id="csvInput" accept=".csv" />
-        <button type="button" onclick="generateMatrix()">Generate Boston Matrix</button>
+        <button type="button" onclick="generateBCGMatrix()">Generate BCG Matrix</button>
     </form>
 
-    <canvas id="bostonMatrixChart" width="800" height="400"></canvas>
-
-    <div class="description">
-        <h2>How to Use the Boston Matrix</h2>
-        <p>To use this tool, follow these steps:</p>
-        <ol>
-            <li>Prepare a CSV file with the following columns:</li>
-            <ul>
-                <li><strong>Column A:</strong> Product name</li>
-                <li><strong>Column B:</strong> Purchase price (ex VAT)</li>
-                <li><strong>Column C:</strong> Sales price (inc VAT)</li>
-                <li><strong>Column D:</strong> Quantity sold</li>
-            </ul>
-            <li>Upload the CSV file using the file input above.</li>
-            <li>Click "Generate Boston Matrix" to visualize your data.</li>
-        </ol>
-        <p>Ensure that the data in the CSV file is correctly formatted. You can download a template below.</p>
-        <div class="download">
-            <a href="template.csv" download="boston_matrix_template.csv">Download CSV Template</a>
-        </div>
-    </div>
-
-    <div id="aiFeedback" class="ai-feedback">
-        <h2>AI Feedback</h2>
-        <ul id="feedbackList">
-            <!-- AI feedback per product will be displayed here -->
-        </ul>
-    </div>
+    <canvas id="bcgMatrixChart" width="800" height="400"></canvas>
 
     <script>
         const taxRate = 0.25;
-
-        function createProductInputs() {
-            const container = document.getElementById('productInputs');
-            container.innerHTML = '';
-        }
-
-        function calculateContribution(salesPrice, purchasePrice, quantitySold) {
-            const salesPriceExVAT = salesPrice / (1 + taxRate);
-            const profitPerUnit = salesPriceExVAT - purchasePrice;
-            return profitPerUnit * quantitySold;
-        }
 
         function parseCSV(file) {
             return new Promise((resolve, reject) => {
@@ -182,84 +86,57 @@
                 };
             });
 
-            analyzeData(products);
-            generateMatrix(products);
+            generateBCGMatrix(products);
         });
 
-        function analyzeData(products) {
-            const feedbackList = document.getElementById('feedbackList');
-            feedbackList.innerHTML = '';
-
-            if (!Array.isArray(products) || products.length === 0) {
-                const li = document.createElement('li');
-                li.textContent = "No valid data found. Please check your CSV file.";
-                feedbackList.appendChild(li);
-                return;
-            }
-
-            products.forEach(product => {
-                const feedbackItem = document.createElement('li');
-
-                let feedback = `Product: ${product.name} - `;
-
-                if (product.purchasePrice <= 0 || product.salesPrice <= 0) {
-                    feedback += "Check pricing values. They cannot be zero or negative. ";
-                }
-
-                if (product.quantitySold <= 0) {
-                    feedback += "Consider strategies to improve sales. ";
-                }
-
-                const profitMargin = (product.salesPrice / (1 + taxRate)) - product.purchasePrice;
-                if (profitMargin > 50) {
-                    feedback += "High profit margin detected. Focus on promoting this product. ";
-                } else if (profitMargin < 10) {
-                    feedback += "Low profit margin detected. Consider adjusting pricing or reducing costs. ";
-                }
-
-                feedbackItem.textContent = feedback;
-                feedbackList.appendChild(feedbackItem);
-            });
-        }
-
-        function generateMatrix(products = []) {
+        function generateBCGMatrix(products = []) {
             if (!Array.isArray(products) || products.length === 0) {
                 alert("No valid products to display in the matrix. Please check your CSV file.");
                 return;
             }
 
+            const totalMarketShare = products.reduce((sum, p) => sum + p.quantitySold, 0);
+
             const data = products.map(product => {
-                const contribution = ((product.salesPrice / (1 + taxRate)) - product.purchasePrice) * product.quantitySold;
-                const revenue = (product.salesPrice / (1 + taxRate)) * product.quantitySold;
+                const growthRate = Math.random() * 20 - 10; // Simulated growth rate (-10% to +10%)
+                const relativeMarketShare = (product.quantitySold / totalMarketShare) * 100;
+
                 return {
                     ...product,
-                    contribution: contribution || 0,
-                    revenue: revenue || 0,
-                    marketShare: revenue / products.reduce((sum, p) => sum + ((p.salesPrice / (1 + taxRate)) * p.quantitySold), 0) * 100,
+                    growthRate,
+                    relativeMarketShare,
                 };
             });
 
-            const ctx = document.getElementById('bostonMatrixChart').getContext('2d');
+            const ctx = document.getElementById('bcgMatrixChart').getContext('2d');
             new Chart(ctx, {
                 type: 'bubble',
                 data: {
                     datasets: data.map((p, i) => ({
-                        label: p.name,
-                        data: [{ x: p.marketShare.toFixed(2), y: p.contribution.toFixed(2), r: 5 }],
-                        backgroundColor: `rgba(${(i * 30) % 255}, ${(i * 60) % 255}, ${(i * 90) % 255}, 0.7)`
+                        label: `${p.name} (${p.growthRate.toFixed(2)}%, ${p.relativeMarketShare.toFixed(2)}%)`,
+                        data: [{ x: p.relativeMarketShare, y: p.growthRate, r: 10 }],
+                        backgroundColor: `rgba(${(i * 50) % 255}, ${(i * 100) % 255}, ${(i * 150) % 255}, 0.7)`
                     }))
                 },
                 options: {
                     scales: {
-                        x: { title: { display: true, text: 'Market Share (%)' }, min: 0, max: 100 },
-                        y: { title: { display: true, text: 'Contribution' }, min: 0 },
+                        x: {
+                            title: { display: true, text: 'Relative Market Share (%)' },
+                            min: 0,
+                            max: 100
+                        },
+                        y: {
+                            title: { display: true, text: 'Market Growth Rate (%)' },
+                            min: -10,
+                            max: 10
+                        }
                     },
                     plugins: {
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
                                     const point = context.raw;
-                                    return `Market Share: ${point.x}%, Contribution: ${point.y}`;
+                                    return `Market Share: ${point.x.toFixed(2)}%, Growth Rate: ${point.y.toFixed(2)}%`;
                                 }
                             }
                         }
@@ -267,24 +144,6 @@
                 },
             });
         }
-
-        createProductInputs();
-
-        // Create and add a downloadable CSV template dynamically
-        const csvContent = "title;purchasePrice;salesPrice;quantitySold\nProduct A;50;100;200\nProduct B;30;60;150\nProduct C;40;80;100";
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        document.querySelector('.download a').setAttribute('href', url);
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
