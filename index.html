@@ -80,28 +80,18 @@
         <div id="productInputs">
             <!-- Product inputs will be generated here -->
         </div>
+        <input type="file" id="csvInput" accept=".csv" />
         <button type="button" onclick="generateMatrix()">Generate Boston Matrix</button>
     </form>
 
     <canvas id="bostonMatrixChart" width="800" height="400"></canvas>
 
     <script>
-        const numProducts = 10;
         const taxRate = 0.25;
 
         function createProductInputs() {
             const container = document.getElementById('productInputs');
-            for (let i = 0; i < numProducts; i++) {
-                const div = document.createElement('div');
-                div.innerHTML = `
-                    <h4>Product ${i + 1}</h4>
-                    <label>Title: <input type="text" id="productTitle${i}"></label>
-                    <label>Purchase Price (ex VAT): <input type="number" id="purchasePrice${i}"></label>
-                    <label>Sales Price (inc VAT): <input type="number" id="salesPrice${i}"></label>
-                    <label>Quantity Sold: <input type="number" id="quantitySold${i}"></label>
-                `;
-                container.appendChild(div);
-            }
+            container.innerHTML = '';
         }
 
         function calculateContribution(salesPrice, purchasePrice, quantitySold) {
@@ -110,32 +100,51 @@
             return profitPerUnit * quantitySold;
         }
 
-        function generateMatrix() {
-            const products = [];
+        function parseCSV(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const lines = reader.result.split('\n').map(line => line.split(','));
+                    resolve(lines);
+                };
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
+        }
 
-            for (let i = 0; i < numProducts; i++) {
-                const title = document.getElementById(`productTitle${i}`).value || `Product ${i + 1}`;
-                const purchasePrice = parseFloat(document.getElementById(`purchasePrice${i}`).value) || 0;
-                const salesPrice = parseFloat(document.getElementById(`salesPrice${i}`).value) || 0;
-                const quantitySold = parseInt(document.getElementById(`quantitySold${i}`).value) || 0;
+        document.getElementById('csvInput').addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
 
-                if (salesPrice > 0 && quantitySold > 0) {
-                    const contribution = calculateContribution(salesPrice, purchasePrice, quantitySold);
-                    const revenue = (salesPrice / (1 + taxRate)) * quantitySold;
+            const csvData = await parseCSV(file);
+            const products = csvData.slice(1).map((row) => {
+                const [title, purchasePrice, salesPrice, quantitySold] = row;
+                return {
+                    name: title,
+                    purchasePrice: parseFloat(purchasePrice) || 0,
+                    salesPrice: parseFloat(salesPrice) || 0,
+                    quantitySold: parseInt(quantitySold) || 0,
+                };
+            });
 
-                    products.push({
-                        name: title,
-                        contribution,
-                        revenue,
-                        quantitySold
-                    });
-                }
-            }
+            generateMatrix(products);
+        });
 
+        function generateMatrix(products = []) {
             if (products.length === 0) {
                 alert("No valid products to display in the matrix.");
                 return;
             }
+
+            products = products.map((product) => {
+                const contribution = calculateContribution(product.salesPrice, product.purchasePrice, product.quantitySold);
+                const revenue = (product.salesPrice / (1 + taxRate)) * product.quantitySold;
+                return {
+                    ...product,
+                    contribution,
+                    revenue,
+                };
+            });
 
             const totalRevenue = products.reduce((sum, p) => sum + p.revenue, 0);
             products.forEach(p => p.marketShare = (p.revenue / totalRevenue) * 100);
@@ -185,6 +194,7 @@
     </script>
 </body>
 </html>
+
 
 
 
