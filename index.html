@@ -153,15 +153,25 @@
                 data: {
                     datasets: data.map((p, i) => ({
                         label: p.name,
-                        data: [{ x: p.marketShare, y: p.contribution, r: Math.max(Math.sqrt(p.revenue), 5) }],
+                        data: [{ x: p.marketShare.toFixed(2), y: p.contribution.toFixed(2), r: Math.max(Math.sqrt(p.revenue), 5) }],
                         backgroundColor: `rgba(${(i * 30) % 255}, ${(i * 60) % 255}, ${(i * 90) % 255}, 0.7)`
                     }))
                 },
                 options: {
                     scales: {
                         x: { title: { display: true, text: 'Market Share (%)' }, min: 0, max: 100 },
-                        y: { title: { display: true, text: 'Contribution' } },
+                        y: { title: { display: true, text: 'Contribution' }, min: 0 },
                     },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const point = context.raw;
+                                    return `Market Share: ${point.x}%, Contribution: ${point.y}, Revenue Size: ${point.r}`;
+                                }
+                            }
+                        }
+                    }
                 },
             });
         }
