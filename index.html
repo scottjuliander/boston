@@ -154,6 +154,8 @@
             const totalRevenue = products.reduce((sum, p) => sum + p.revenue, 0);
             products.forEach(p => p.marketShare = (p.revenue / totalRevenue) * 100);
 
+            console.log("Products being plotted:", products); // Debugging log
+
             const ctx = document.getElementById('bostonMatrixChart').getContext('2d');
 
             new Chart(ctx, {
@@ -161,7 +163,11 @@
                 data: {
                     datasets: products.map((p, i) => ({
                         label: p.name,
-                        data: [{ x: p.marketShare, y: p.contribution, r: Math.sqrt(p.revenue) }],
+                        data: [{ 
+                            x: p.marketShare, 
+                            y: p.contribution, 
+                            r: Math.sqrt(p.revenue) || 5 // Ensure bubble size is visible
+                        }],
                         backgroundColor: `rgba(${(i * 30) % 255}, ${(i * 60) % 255}, ${(i * 90) % 255}, 0.7)`
                     }))
                 },
@@ -182,7 +188,9 @@
                             title: {
                                 display: true,
                                 text: 'Market Share (%)'
-                            }
+                            },
+                            min: 0,
+                            max: 100
                         },
                         y: {
                             title: {
@@ -199,6 +207,7 @@
     </script>
 </body>
 </html>
+
 
 
 
