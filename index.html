@@ -117,7 +117,7 @@
             if (!file) return;
 
             const csvData = await parseCSV(file);
-            const products = csvData.slice(1).filter(row => row.length === 4).map(row => {
+            const products = csvData.slice(1).filter(row => row.length >= 4).map(row => {
                 const [title, purchasePrice, salesPrice, quantitySold] = row;
                 return {
                     name: title,
