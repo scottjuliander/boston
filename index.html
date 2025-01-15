@@ -95,10 +95,10 @@
                 const div = document.createElement('div');
                 div.innerHTML = `
                     <h4>Product ${i + 1}</h4>
-                    <label>Title: <input type="text" id="productTitle${i}" required></label>
-                    <label>Purchase Price (ex VAT): <input type="number" id="purchasePrice${i}" required></label>
-                    <label>Sales Price (inc VAT): <input type="number" id="salesPrice${i}" required></label>
-                    <label>Quantity Sold: <input type="number" id="quantitySold${i}" required></label>
+                    <label>Title: <input type="text" id="productTitle${i}"></label>
+                    <label>Purchase Price (ex VAT): <input type="number" id="purchasePrice${i}"></label>
+                    <label>Sales Price (inc VAT): <input type="number" id="salesPrice${i}"></label>
+                    <label>Quantity Sold: <input type="number" id="quantitySold${i}"></label>
                 `;
                 container.appendChild(div);
             }
@@ -114,20 +114,27 @@
             const products = [];
 
             for (let i = 0; i < numProducts; i++) {
-                const title = document.getElementById(`productTitle${i}`).value;
-                const purchasePrice = parseFloat(document.getElementById(`purchasePrice${i}`).value);
-                const salesPrice = parseFloat(document.getElementById(`salesPrice${i}`).value);
-                const quantitySold = parseInt(document.getElementById(`quantitySold${i}`).value);
+                const title = document.getElementById(`productTitle${i}`).value || `Product ${i + 1}`;
+                const purchasePrice = parseFloat(document.getElementById(`purchasePrice${i}`).value) || 0;
+                const salesPrice = parseFloat(document.getElementById(`salesPrice${i}`).value) || 0;
+                const quantitySold = parseInt(document.getElementById(`quantitySold${i}`).value) || 0;
 
-                const contribution = calculateContribution(salesPrice, purchasePrice, quantitySold);
-                const revenue = (salesPrice / (1 + taxRate)) * quantitySold;
+                if (salesPrice > 0 && quantitySold > 0) {
+                    const contribution = calculateContribution(salesPrice, purchasePrice, quantitySold);
+                    const revenue = (salesPrice / (1 + taxRate)) * quantitySold;
 
-                products.push({
-                    name: title || `Product ${i + 1}`,
-                    contribution,
-                    revenue,
-                    quantitySold
-                });
+                    products.push({
+                        name: title,
+                        contribution,
+                        revenue,
+                        quantitySold
+                    });
+                }
+            }
+
+            if (products.length === 0) {
+                alert("No valid products to display in the matrix.");
+                return;
             }
 
             const totalRevenue = products.reduce((sum, p) => sum + p.revenue, 0);
@@ -178,5 +185,6 @@
     </script>
 </body>
 </html>
+
 
 
