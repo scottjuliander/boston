@@ -191,12 +191,30 @@
                         x: {
                             title: { display: true, text: 'Relative Market Share (%)' },
                             min: 0,
-                            max: 100
+                            max: 100,
+                            grid: {
+                                drawBorder: true,
+                                color: function(context) {
+                                    return context.tick.value === 50 ? '#ff0000' : '#ddd';
+                                },
+                                lineWidth: function(context) {
+                                    return context.tick.value === 50 ? 2 : 1;
+                                }
+                            }
                         },
                         y: {
                             title: { display: true, text: 'Market Growth Rate (%)' },
                             min: -10,
-                            max: 10
+                            max: 10,
+                            grid: {
+                                drawBorder: true,
+                                color: function(context) {
+                                    return context.tick.value === 0 ? '#ff0000' : '#ddd';
+                                },
+                                lineWidth: function(context) {
+                                    return context.tick.value === 0 ? 2 : 1;
+                                }
+                            }
                         }
                     },
                     plugins: {
@@ -239,5 +257,6 @@
     </script>
 </body>
 </html>
+
 
 
