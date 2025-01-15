@@ -35,6 +35,21 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+        .quadrants {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 10px;
+            max-width: 800px;
+            margin: 20px auto;
+            text-align: center;
+        }
+        .quadrant {
+            padding: 10px;
+            background: rgba(200, 200, 200, 0.1);
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
         .description {
             max-width: 800px;
             margin: 20px auto;
@@ -53,6 +68,25 @@
         <input type="file" id="csvInput" accept=".csv" />
         <button type="button" onclick="generateBCGMatrix()">Generate BCG Matrix</button>
     </form>
+
+    <div class="quadrants">
+        <div class="quadrant" id="stars">
+            <h3>Stars</h3>
+            <p>High growth, high market share. These are leaders requiring investment to maintain their position.</p>
+        </div>
+        <div class="quadrant" id="question-marks">
+            <h3>Question Marks</h3>
+            <p>High growth, low market share. These need decisions about further investment or divestment.</p>
+        </div>
+        <div class="quadrant" id="cash-cows">
+            <h3>Cash Cows</h3>
+            <p>Low growth, high market share. These generate stable income with minimal investment.</p>
+        </div>
+        <div class="quadrant" id="dogs">
+            <h3>Dogs</h3>
+            <p>Low growth, low market share. These are often divested or kept if they provide strategic value.</p>
+        </div>
+    </div>
 
     <canvas id="bcgMatrixChart" width="800" height="400"></canvas>
 
@@ -147,3 +181,4 @@
     </script>
 </body>
 </html>
+
