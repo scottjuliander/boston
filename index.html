@@ -87,6 +87,15 @@
             text-align: center;
             margin-top: 20px;
         }
+        .ai-feedback {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            color: #333;
+        }
     </style>
 </head>
 <body>
@@ -120,6 +129,11 @@
         <div class="download">
             <a href="template.csv" download="boston_matrix_template.csv">Download CSV Template</a>
         </div>
+    </div>
+
+    <div id="aiFeedback" class="ai-feedback">
+        <h2>AI Feedback</h2>
+        <p id="feedbackText">Upload your data to get AI-generated insights and suggestions.</p>
     </div>
 
     <script>
@@ -163,8 +177,39 @@
                 };
             });
 
+            analyzeData(products);
             generateMatrix(products);
         });
+
+        function analyzeData(products) {
+            const feedbackElement = document.getElementById('feedbackText');
+            if (!Array.isArray(products) || products.length === 0) {
+                feedbackElement.textContent = "No valid data found. Please check your CSV file.";
+                return;
+            }
+
+            let feedback = "Here are some insights and tips based on your data:\n";
+
+            // Check for negative or zero values
+            const negativePrices = products.filter(p => p.purchasePrice <= 0 || p.salesPrice <= 0);
+            if (negativePrices.length > 0) {
+                feedback += `- ${negativePrices.length} product(s) have zero or negative purchase or sales prices. Please verify these values.\n`;
+            }
+
+            // Check for low or zero sales
+            const lowSales = products.filter(p => p.quantitySold <= 0);
+            if (lowSales.length > 0) {
+                feedback += `- ${lowSales.length} product(s) have zero or very low sales. Consider reviewing these products.\n`;
+            }
+
+            // Identify high-profit products
+            const highProfit = products.filter(p => ((p.salesPrice / (1 + taxRate)) - p.purchasePrice) > 50);
+            if (highProfit.length > 0) {
+                feedback += `- ${highProfit.length} product(s) have a high profit margin. Focus on promoting these products.\n`;
+            }
+
+            feedbackElement.textContent = feedback;
+        }
 
         function generateMatrix(products = []) {
             if (!Array.isArray(products) || products.length === 0) {
@@ -222,6 +267,7 @@
     </script>
 </body>
 </html>
+
 
 
 
