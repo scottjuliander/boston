@@ -96,6 +96,9 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             color: #333;
         }
+        .ai-feedback ul {
+            padding-left: 20px;
+        }
     </style>
 </head>
 <body>
@@ -133,7 +136,9 @@
 
     <div id="aiFeedback" class="ai-feedback">
         <h2>AI Feedback</h2>
-        <p id="feedbackText">Upload your data to get AI-generated insights and suggestions.</p>
+        <ul id="feedbackList">
+            <!-- AI feedback per product will be displayed here -->
+        </ul>
     </div>
 
     <script>
@@ -182,33 +187,39 @@
         });
 
         function analyzeData(products) {
-            const feedbackElement = document.getElementById('feedbackText');
+            const feedbackList = document.getElementById('feedbackList');
+            feedbackList.innerHTML = '';
+
             if (!Array.isArray(products) || products.length === 0) {
-                feedbackElement.textContent = "No valid data found. Please check your CSV file.";
+                const li = document.createElement('li');
+                li.textContent = "No valid data found. Please check your CSV file.";
+                feedbackList.appendChild(li);
                 return;
             }
 
-            let feedback = "Here are some insights and tips based on your data:\n";
+            products.forEach(product => {
+                const feedbackItem = document.createElement('li');
 
-            // Check for negative or zero values
-            const negativePrices = products.filter(p => p.purchasePrice <= 0 || p.salesPrice <= 0);
-            if (negativePrices.length > 0) {
-                feedback += `- ${negativePrices.length} product(s) have zero or negative purchase or sales prices. Please verify these values.\n`;
-            }
+                let feedback = `Product: ${product.name} - `;
 
-            // Check for low or zero sales
-            const lowSales = products.filter(p => p.quantitySold <= 0);
-            if (lowSales.length > 0) {
-                feedback += `- ${lowSales.length} product(s) have zero or very low sales. Consider reviewing these products.\n`;
-            }
+                if (product.purchasePrice <= 0 || product.salesPrice <= 0) {
+                    feedback += "Check pricing values. They cannot be zero or negative. ";
+                }
 
-            // Identify high-profit products
-            const highProfit = products.filter(p => ((p.salesPrice / (1 + taxRate)) - p.purchasePrice) > 50);
-            if (highProfit.length > 0) {
-                feedback += `- ${highProfit.length} product(s) have a high profit margin. Focus on promoting these products.\n`;
-            }
+                if (product.quantitySold <= 0) {
+                    feedback += "Consider strategies to improve sales. ";
+                }
 
-            feedbackElement.textContent = feedback;
+                const profitMargin = (product.salesPrice / (1 + taxRate)) - product.purchasePrice;
+                if (profitMargin > 50) {
+                    feedback += "High profit margin detected. Focus on promoting this product. ";
+                } else if (profitMargin < 10) {
+                    feedback += "Low profit margin detected. Consider adjusting pricing or reducing costs. ";
+                }
+
+                feedbackItem.textContent = feedback;
+                feedbackList.appendChild(feedbackItem);
+            });
         }
 
         function generateMatrix(products = []) {
