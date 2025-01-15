@@ -104,7 +104,7 @@
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = () => {
-                    const lines = reader.result.split('\n').map(line => line.split(','));
+                    const lines = reader.result.split('\n').map(line => line.split(',').map(item => item.trim()));
                     resolve(lines);
                 };
                 reader.onerror = reject;
@@ -117,7 +117,7 @@
             if (!file) return;
 
             const csvData = await parseCSV(file);
-            const products = csvData.slice(1).map((row) => {
+            const products = csvData.slice(1).filter(row => row.length === 4 && row.every(cell => cell !== '')).map((row) => {
                 const [title, purchasePrice, salesPrice, quantitySold] = row;
                 return {
                     name: title,
@@ -126,6 +126,11 @@
                     quantitySold: parseInt(quantitySold) || 0,
                 };
             });
+
+            if (products.length === 0) {
+                alert("No valid products found in the file.");
+                return;
+            }
 
             generateMatrix(products);
         });
@@ -194,6 +199,7 @@
     </script>
 </body>
 </html>
+
 
 
 
