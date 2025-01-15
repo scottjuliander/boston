@@ -59,6 +59,10 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             color: #333;
         }
+        .download {
+            text-align: center;
+            margin: 20px auto;
+        }
     </style>
 </head>
 <body>
@@ -68,6 +72,21 @@
         <input type="file" id="csvInput" accept=".csv" />
         <button type="button" onclick="generateBCGMatrix()">Generate BCG Matrix</button>
     </form>
+
+    <div class="description">
+        <h2>How to Use the BCG Matrix</h2>
+        <p>The BCG Matrix helps analyze your product portfolio. Upload a CSV file with the following columns:</p>
+        <ul>
+            <li><strong>Column A:</strong> Product Name</li>
+            <li><strong>Column B:</strong> Purchase Price (excl. VAT)</li>
+            <li><strong>Column C:</strong> Sales Price (incl. VAT)</li>
+            <li><strong>Column D:</strong> Quantity Sold</li>
+        </ul>
+        <p>You can download a CSV template below:</p>
+        <div class="download">
+            <a href="#" id="downloadTemplate" download="BCG_Matrix_Template.csv">Download CSV Template</a>
+        </div>
+    </div>
 
     <div class="quadrants">
         <div class="quadrant" id="stars">
@@ -90,8 +109,22 @@
 
     <canvas id="bcgMatrixChart" width="800" height="400"></canvas>
 
+    <div class="description" id="aiFeedback">
+        <h2>AI Insights</h2>
+        <ul id="feedbackList">
+            <!-- AI insights will be added dynamically -->
+        </ul>
+    </div>
+
     <script>
         const taxRate = 0.25;
+
+        function generateCSVTemplate() {
+            const csvContent = "Product Name;Purchase Price;Sales Price;Quantity Sold\nExample Product;50;100;200";
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            document.getElementById('downloadTemplate').setAttribute('href', url);
+        }
 
         function parseCSV(file) {
             return new Promise((resolve, reject) => {
@@ -121,6 +154,7 @@
             });
 
             generateBCGMatrix(products);
+            generateAIInsights(products);
         });
 
         function generateBCGMatrix(products = []) {
@@ -178,7 +212,32 @@
                 },
             });
         }
+
+        function generateAIInsights(products) {
+            const feedbackList = document.getElementById('feedbackList');
+            feedbackList.innerHTML = '';
+
+            products.forEach(product => {
+                const profitMargin = (product.salesPrice / (1 + taxRate)) - product.purchasePrice;
+                let feedback = `Product: ${product.name} - `;
+
+                if (profitMargin > 50) {
+                    feedback += "This product has a high profit margin. Consider increasing marketing efforts to boost sales further.";
+                } else if (profitMargin < 10) {
+                    feedback += "Low profit margin detected. Evaluate cost reductions or price adjustments to improve profitability.";
+                } else {
+                    feedback += "Stable profit margin. Focus on maintaining quality and customer satisfaction.";
+                }
+
+                const feedbackItem = document.createElement('li');
+                feedbackItem.textContent = feedback;
+                feedbackList.appendChild(feedbackItem);
+            });
+        }
+
+        generateCSVTemplate();
     </script>
 </body>
 </html>
+
 
